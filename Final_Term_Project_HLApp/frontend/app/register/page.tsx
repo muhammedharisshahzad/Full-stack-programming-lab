@@ -56,10 +56,7 @@ export default function RegisterPage() {
       <section className="auth-layout register-layout">
         <aside className="auth-info-panel">
           <div className="brand-row">
-            <div className="brand-mark">
-              <img className="brand-logo" src="/logon.png" alt="HealthLink logo" />
-            </div>
-            <span>HealthLink</span>
+            <img className="full-brand-logo auth-full-logo" src="/fulllogo.png" alt="HealthLink" />
           </div>
           <div>
             <p className="eyebrow">Create your workspace</p>

@@ -9,6 +9,8 @@ import {
   FileText,
   LayoutDashboard,
   LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
   Pill,
   Stethoscope,
   Users
@@ -29,12 +31,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<SessionUser | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     const session = getSession();
     if (!session) router.replace("/login");
     else setUser(session.user);
   }, [router]);
+
+  useEffect(() => {
+    setSidebarCollapsed(localStorage.getItem("healthlink_sidebar") === "collapsed");
+  }, []);
 
   if (!user) return null;
 
@@ -43,18 +50,31 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     router.push("/login");
   }
 
+  function toggleSidebar() {
+    setSidebarCollapsed((value) => {
+      const nextValue = !value;
+      localStorage.setItem("healthlink_sidebar", nextValue ? "collapsed" : "expanded");
+      return nextValue;
+    });
+  }
+
   return (
-    <div className="app-frame">
+    <div className={`app-frame ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
       <aside className="sidebar">
         <div className="sidebar-head">
           <Link className="brand-row" href="/dashboard">
-            <div className="brand-mark">
-              <img className="brand-logo" src="/logon.png" alt="HealthLink logo" />
-            </div>
-            <span>HealthLink</span>
+            <img className="full-brand-logo sidebar-full-logo" src="/fulllogo.png" alt="HealthLink" />
           </Link>
-          <span className={`role-badge ${user.role}`}>{user.role}</span>
+          <button
+            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="sidebar-toggle"
+            onClick={toggleSidebar}
+            type="button"
+          >
+            {sidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+          </button>
         </div>
+        <span className={`role-badge ${user.role}`}>{user.role}</span>
         <div className="sidebar-caption">Clinical operations</div>
         <nav>
           {nav
@@ -62,16 +82,21 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             .map((item) => {
               const Icon = item.icon;
               return (
-                <Link key={item.href} className={pathname === item.href ? "active" : ""} href={item.href}>
+                <Link
+                  key={item.href}
+                  className={pathname === item.href ? "active" : ""}
+                  href={item.href}
+                  title={item.label}
+                >
                   <Icon size={18} />
-                  {item.label}
+                  <span className="nav-label">{item.label}</span>
                 </Link>
               );
             })}
         </nav>
         <button className="logout-button" onClick={logout}>
           <LogOut size={18} />
-          Logout
+          <span className="nav-label">Logout</span>
         </button>
       </aside>
       <main className="workspace">
